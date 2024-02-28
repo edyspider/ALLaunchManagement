@@ -1,21 +1,50 @@
 {
   "name": "allaunchmanagement",
-  "displayName": "ALLaunchManagement",
-  "description": "Manage multiple lanch configurations to be used in AL projects",
+  "displayName": "AL Launch Management",
+  "description": "Manage multiple launch configurations to be used in AL projects",
+  "publisher": "EdySpider",
+  "icon": "img/icon.png",
+  "author": {
+		"name": "EdySpider",
+		"url": "https://github.com/edyspider"
+	},
   "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.86.0"
-  },
+  "license": "MIT",
+  "bugs": {
+		"url": "https://github.com/edyspider/ALLaunchManagement/issues"
+	},
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "keywords": [
+		"AL",
+    "AL Configuration",
+		"AL Launch",
+		"Business Central",
+		"D365BC",
+		"Dynamics NAV",
+    "VSCode Launch"
+	],
+  "engines": {
+    "vscode": "^1.86.0"
+  },
+  "activationEvents": [
+    "onLanguage:al"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "allaunchmanagement.helloWorld",
-        "title": "Hello World"
+        "command": "allaunchmanagement.setLaunchConfiguration",
+        "title": "ES-LM: Set Launch.json Configuration"
+      },
+      {
+        "command": "allaunchmanagement.openLaunchConfiguration",
+        "title": "ES-LM: Open Launch Configuration"
+      },
+      {
+        "command": "allaunchmanagement.openProjectLaunch",
+        "title": "ES-LM: Open Project Launch.json"
       }
     ]
   },
@@ -37,5 +66,9 @@
     "typescript": "^5.3.3",
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.8"
-  }
+  },
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/edyspider/ALLaunchManagement"
+	}
 }
