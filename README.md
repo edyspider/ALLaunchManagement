@@ -31,6 +31,10 @@ This extensions allows you to add to your AL projects pre-configured `launch.jso
 configurations to minimize the time spent setting up the configurations every time
 you create or add new projects to your workspace/environments.
 
+![Set Configuration](img/content/SettingConfiguration.png)
+
+![Launch.json](img/content/launch.png)
+
 ---
 
 ## Requirements
@@ -48,6 +52,10 @@ This extension contributes the following settings:
 - `ALLaunchManagement.LaunchConfigurations`:
   - This setting allows you to define multiple launch.json configurations.
 
+![Settings](img/content/Settings.png)
+
+![Settings](img/content/launchConfigurations.png)
+
 ---
 
 ## Extension Commands
@@ -61,11 +69,13 @@ This extension contributes the following commands:
 - `ES-LM: Open Project Launch.json`:
   - This command opens the launch.json file of the current project.
 
+![Commands](img/content/Commands.png)
+
 ---
 
 ## Known Issues
 
-There are [one](https://github.com/edyspider/ALLaunchManagement/issues)] reported
+There is [one](https://github.com/edyspider/ALLaunchManagement/issues)] reported
 issue.
 
 ---
