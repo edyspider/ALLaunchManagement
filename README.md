@@ -65,7 +65,8 @@ This extension contributes the following commands:
 
 ## Known Issues
 
-There are no reported issues.
+There are [one](https://github.com/edyspider/ALLaunchManagement/issues)] reported
+issue.
 
 ---
 
