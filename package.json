@@ -8,7 +8,7 @@
 		"name": "EdySpider",
 		"url": "https://github.com/edyspider"
 	},
-  "version": "0.0.1",
+  "version": "1.0.0",
   "license": "MIT",
   "bugs": {
 		"url": "https://github.com/edyspider/ALLaunchManagement/issues"
@@ -22,8 +22,10 @@
 		"AL Launch",
 		"Business Central",
 		"D365BC",
+    "Debug",
 		"Dynamics NAV",
-    "VSCode Launch"
+    "VSCode Launch",
+    "VSCode Debug"
 	],
   "engines": {
     "vscode": "^1.86.0"
@@ -45,6 +47,99 @@
       {
         "command": "allaunchmanagement.openProjectLaunch",
         "title": "ES-LM: Open Project Launch.json"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "VSCode Launch Configurations",
+        "properties": {
+          "alLaunchManagement.launchConfigurations": {
+            "type": "object",
+            "default": {
+              "configurations": [
+                {
+                  "label": "Local",
+                  "configuration": {
+                    "name": "Local Machine",
+                    "request": "launch",
+                    "type": "al",
+                    "environmentType": "OnPrem",
+                    "server": "http://localhost",
+                    "serverInstance": "BC",
+                    "authentication": "Windows",
+                    "tenant": "default",
+                    "breakOnError": true,
+                    "launchBrowser": true,
+                    "enableLongRunningSqlStatements": true,
+                    "enableSqlInformationDebugger": true,
+                    "usePublicURLFromServer": true
+                  }
+                },
+                {
+                  "label": "Sandbox",
+                  "configuration": {
+                    "name": "Sandbox",
+                    "request": "launch",
+                    "type": "al",
+                    "environmentType": "Sandbox",
+                    "environmentName": "Sandbox",
+                    "tenant": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                    "breakOnError": true,
+                    "breakOnRecordWrite": "None",
+                    "launchBrowser": true,
+                    "enableLongRunningSqlStatements": true,
+                    "longRunningSqlStatementsThreshold": 500,
+                    "numberOfSqlStatements": 10
+                  }
+                },
+                {
+                  "label": "Sandbox Debug Job Queue",
+                  "configuration": {
+                    "name": "Debug Job Queue",
+                    "request": "attach",
+                    "type": "al",
+                    "environmentType": "Sandbox",
+                    "environmentName": "Sandbox",
+                    "tenant": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                    "breakOnNext": "Background",
+                    "enableLongRunningSqlStatements": true,
+                    "enableSqlInformationDebugger": true,
+                    "longRunningSqlStatementsThreshold": 500,
+                    "numberOfSqlStatements": 10
+                  }
+                },
+                {
+                  "label": "Sandbox Debug API",
+                  "configuration": {
+                    "name": "Debug API",
+                    "request": "snapshotInitialize",
+                    "type": "al",
+                    "environmentType": "Sandbox",
+                    "environmentName": "Sandbox",
+                    "tenant": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                    "breakOnNext": "WebServiceClient"
+                  }
+                },
+                {
+                  "label": "Sandbox Snapshot",
+                  "configuration": {
+                    "name": "Snapshot",
+                    "request": "snapshotInitialize",
+                    "type": "al",
+                    "environmentType": "Sandbox",
+                    "environmentName": "Sandbox",
+                    "tenant": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                    "breakOnNext": "WebServiceClient",
+                    "snapshotVerbosity": "Full",
+                    "executionContext": "DebugAndProfile",
+                    "profilingType": "Instrumentation"
+                  }
+                }
+              ] 
+            },
+            "description": "VSCode Pre-defined launch configurations for your al extension."
+          }
+        }
       }
     ]
   },
