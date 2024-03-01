@@ -8,13 +8,14 @@
 		"name": "EdySpider",
 		"url": "https://github.com/edyspider"
 	},
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "bugs": {
 		"url": "https://github.com/edyspider/ALLaunchManagement/issues"
 	},
   "categories": [
-    "Other"
+    "Debuggers",
+    "Testing"
   ],
   "keywords": [
 		"AL",
