@@ -1,99 +1,76 @@
 import * as vscode from 'vscode';
 import type { VSCodeConfiguration } from './interfaces/configuration.interface';
+import { mergeConfigurations } from './launch-configurations';
+
+const MESSAGE_PREFIX = 'AL Launch Management';
 
 export class ALLaunchManagement {
     /**
-     * Update the Launch.json file based on the selected pre-defined configuration.
+     * Adds the selected pre-defined configurations to the launch.json file
+     * of the current workspace folder. A configuration with the same name is replaced.
      */
-    async setLaunchConfiguration() {
-        let selectedWorkspaceFolder: vscode.WorkspaceFolder | undefined;
-        let currentConfigurations: vscode.DebugConfiguration[];
-        const singleProjectFolder: boolean = this.isSingleFolderProject();
-
-        if (singleProjectFolder) {
-            // Get the current configurations
-            currentConfigurations = vscode.workspace.getConfiguration().get<vscode.DebugConfiguration[]>('launch.configurations') || [];
-        } else {    
-            // Get the active text editor's URI (file or untitled)
-            const activeTextEditorUri = vscode.window.activeTextEditor?.document.uri;
-
-            if (!activeTextEditorUri) {
-                // Get all workspace folders
-                const workspaceFolders = vscode.workspace.workspaceFolders;
-
-                if (!workspaceFolders) {
-                    vscode.window.showWarningMessage(`AL Launch Management: No workspace opened!`);
-                    return;
-                }
-
-                // Prompt user to select a workspace folder
-                const selectedFolder = await vscode.window.showQuickPick(
-                    workspaceFolders.map(folder => folder.uri.fsPath),
-                    { placeHolder: 'Select a workspace folder' }
-                );
-
-                if (!selectedFolder) {
-                    vscode.window.showWarningMessage(`AL Launch Management: Selected workspace folder not found!`);
-                    return;
-                }
-
-                // Get selected folder URI
-                const selectedFolderUri  = vscode.Uri.file(selectedFolder);
-
-                // Get the workspace folder for the active text editor's URI
-                selectedWorkspaceFolder = vscode.workspace.getWorkspaceFolder(selectedFolderUri);
-            } else {
-                // Get the workspace folder for the active text editor's URI
-                selectedWorkspaceFolder = vscode.workspace.getWorkspaceFolder(activeTextEditorUri);
-
-                if (!selectedWorkspaceFolder) {
-                    vscode.window.showWarningMessage(`AL Launch Management: No workspace folder found for the active file!`);
-                    return;
-                }
-            }
-
-            if (!selectedWorkspaceFolder) {
-                vscode.window.showWarningMessage(`AL Launch Management: No workspace folder selected!`);
-                return;
-            }
-            
-            // Get the current configurations for the active workspace folder
-            currentConfigurations = vscode.workspace
-                .getConfiguration(undefined, selectedWorkspaceFolder.uri)
-                .get<vscode.DebugConfiguration[]>('launch.configurations') || [];
+    async setLaunchConfiguration(): Promise<void> {
+        const workspaceFolder = await this.selectWorkspaceFolder();
+        if (!workspaceFolder) {
+            return;
         }
 
-        // Read predefined configurations from extension settings
-        const predefinedConfigurations: VSCodeConfiguration[] = vscode.workspace
+        // Read pre-defined configurations from the extension settings
+        const predefinedConfigurations = vscode.workspace
             .getConfiguration()
-            .get<VSCodeConfiguration[]>('alLaunchManagement.launchConfigurations.configurations') || [];
+            .get<VSCodeConfiguration[]>('alLaunchManagement.launchConfigurations.configurations') ?? [];
+
+        if (predefinedConfigurations.length === 0) {
+            vscode.window.showWarningMessage(`${MESSAGE_PREFIX}: No pre-defined configurations found in the settings!`);
+            return;
+        }
 
         // Prompt the user to choose configurations
-        const selectedConfigurations = await vscode.window.showQuickPick(
-            predefinedConfigurations.map(config => config.label),
-            { canPickMany: true, placeHolder: 'Select the configurations to add to launch.json' }
+        const selectedItems = await vscode.window.showQuickPick(
+            predefinedConfigurations.map(predefined => ({
+                label: predefined.label,
+                description: predefined.configuration.name,
+                predefined,
+            })),
+            { canPickMany: true, placeHolder: 'Select the configurations to add to launch.json' },
         );
 
-        if (selectedConfigurations) {
-            // Add the selected predefined configurations
-            const updatedConfigurations = currentConfigurations.concat(
-                predefinedConfigurations.filter(config => selectedConfigurations.includes(config.label)).map(config => config.configuration)
-            );
-
-            if (!selectedWorkspaceFolder) {
-                vscode.workspace
-                    .getConfiguration()
-                    .update('launch.configurations', updatedConfigurations, vscode.ConfigurationTarget.Workspace);
-            } else {
-                vscode.workspace
-                    .getConfiguration(undefined, selectedWorkspaceFolder.uri)
-                    .update('launch.configurations', updatedConfigurations, vscode.ConfigurationTarget.WorkspaceFolder);
-            }
-
-            vscode.window.showInformationMessage(`AL Launch Management: AL Launch processed successfully for workspace folder:'${selectedWorkspaceFolder}'!`);
-        } else {
-            vscode.window.showWarningMessage(`AL Launch Management: No configuration selected!`);
+        if (!selectedItems || selectedItems.length === 0) {
+            vscode.window.showWarningMessage(`${MESSAGE_PREFIX}: No configuration selected!`);
+            return;
         }
+
+        // With a .code-workspace file, each folder has its own launch.json (WorkspaceFolder).
+        // With a single folder opened, the folder's launch.json is the workspace one.
+        const usesWorkspaceFile = vscode.workspace.workspaceFile !== undefined;
+        const target = usesWorkspaceFile
+            ? vscode.ConfigurationTarget.WorkspaceFolder
+            : vscode.ConfigurationTarget.Workspace;
+
+        // inspect() reads only the chosen level, so user-level launch configurations are not copied
+        const launchConfiguration = vscode.workspace.getConfiguration('launch', workspaceFolder.uri);
+        const inspected = launchConfiguration.inspect<vscode.DebugConfiguration[]>('configurations');
+        const currentConfigurations = (usesWorkspaceFile
+            ? inspected?.workspaceFolderValue
+            : inspected?.workspaceValue) ?? [];
+
+        const result = mergeConfigurations(
+            currentConfigurations,
+            selectedItems.map(item => item.predefined.configuration),
+        );
+
+        try {
+            await launchConfiguration.update('configurations', result.configurations, target);
+        } catch (error) {
+            const reason = error instanceof Error ? error.message : String(error);
+            vscode.window.showErrorMessage(`${MESSAGE_PREFIX}: Could not update launch.json. ${reason}`);
+            return;
+        }
+
+        vscode.window.showInformationMessage(
+            `${MESSAGE_PREFIX}: launch.json of '${workspaceFolder.name}' updated ` +
+            `(${result.added} added, ${result.replaced} replaced).`,
+        );
     }
 
     /**
@@ -111,18 +88,35 @@ export class ALLaunchManagement {
     }
 
     /**
-     * Check if the current project is not in a workspace based project
-     * @returns boolean
+     * Returns the workspace folder to update: the only one, the one of the active file,
+     * or the one the user picks from a list.
      */
-    private isSingleFolderProject(): boolean {
+    private async selectWorkspaceFolder(): Promise<vscode.WorkspaceFolder | undefined> {
         const workspaceFolders = vscode.workspace.workspaceFolders;
-        
-        if (workspaceFolders) {
-            // Check if there is only one workspace folder
-            return workspaceFolders.length === 1;
-        } else {
-            // No workspace folders, likely a single-folder project
-            return true;
+
+        if (!workspaceFolders || workspaceFolders.length === 0) {
+            vscode.window.showWarningMessage(`${MESSAGE_PREFIX}: Open a folder or workspace first!`);
+            return undefined;
         }
+
+        if (workspaceFolders.length === 1) {
+            return workspaceFolders[0];
+        }
+
+        const activeFileUri = vscode.window.activeTextEditor?.document.uri;
+        const activeFolder = activeFileUri ? vscode.workspace.getWorkspaceFolder(activeFileUri) : undefined;
+        if (activeFolder) {
+            return activeFolder;
+        }
+
+        const pickedFolder = await vscode.window.showWorkspaceFolderPick({
+            placeHolder: 'Select the workspace folder to update',
+        });
+
+        if (!pickedFolder) {
+            vscode.window.showWarningMessage(`${MESSAGE_PREFIX}: No workspace folder selected!`);
+        }
+
+        return pickedFolder;
     }
 }
