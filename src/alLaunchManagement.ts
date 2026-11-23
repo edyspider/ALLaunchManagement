@@ -1,18 +1,18 @@
-const vscode = require('vscode');
-import { VSCodeConfiguration } from './interfaces/configuration.interface';
+import * as vscode from 'vscode';
+import type { VSCodeConfiguration } from './interfaces/configuration.interface';
 
 export class ALLaunchManagement {
     /**
      * Update the Launch.json file based on the selected pre-defined configuration.
      */
-    async SetLaunchConfiguration() {
-        let selectedWorkspaceFolder: any;
-        let currentConfigurations: any;
+    async setLaunchConfiguration() {
+        let selectedWorkspaceFolder: vscode.WorkspaceFolder | undefined;
+        let currentConfigurations: vscode.DebugConfiguration[];
         const singleProjectFolder: boolean = this.isSingleFolderProject();
 
         if (singleProjectFolder) {
             // Get the current configurations
-            currentConfigurations = vscode.workspace.getConfiguration().get('launch.configurations') || [];
+            currentConfigurations = vscode.workspace.getConfiguration().get<vscode.DebugConfiguration[]>('launch.configurations') || [];
         } else {    
             // Get the active text editor's URI (file or untitled)
             const activeTextEditorUri = vscode.window.activeTextEditor?.document.uri;
@@ -28,7 +28,7 @@ export class ALLaunchManagement {
 
                 // Prompt user to select a workspace folder
                 const selectedFolder = await vscode.window.showQuickPick(
-                    workspaceFolders.map((folder: { uri: { fsPath: any; }; }) => folder.uri.fsPath),
+                    workspaceFolders.map(folder => folder.uri.fsPath),
                     { placeHolder: 'Select a workspace folder' }
                 );
 
@@ -60,13 +60,13 @@ export class ALLaunchManagement {
             // Get the current configurations for the active workspace folder
             currentConfigurations = vscode.workspace
                 .getConfiguration(undefined, selectedWorkspaceFolder.uri)
-                .get('launch.configurations') || [];
+                .get<vscode.DebugConfiguration[]>('launch.configurations') || [];
         }
 
         // Read predefined configurations from extension settings
         const predefinedConfigurations: VSCodeConfiguration[] = vscode.workspace
             .getConfiguration()
-            .get('alLaunchManagement.launchConfigurations.configurations') || [];
+            .get<VSCodeConfiguration[]>('alLaunchManagement.launchConfigurations.configurations') || [];
 
         // Prompt the user to choose configurations
         const selectedConfigurations = await vscode.window.showQuickPick(
@@ -80,10 +80,10 @@ export class ALLaunchManagement {
                 predefinedConfigurations.filter(config => selectedConfigurations.includes(config.label)).map(config => config.configuration)
             );
 
-            if (singleProjectFolder) {
+            if (!selectedWorkspaceFolder) {
                 vscode.workspace
                     .getConfiguration()
-                    .update('launch.configurations', updatedConfigurations, vscode.ConfigurationTarget.workspace);
+                    .update('launch.configurations', updatedConfigurations, vscode.ConfigurationTarget.Workspace);
             } else {
                 vscode.workspace
                     .getConfiguration(undefined, selectedWorkspaceFolder.uri)
@@ -99,14 +99,14 @@ export class ALLaunchManagement {
     /**
      * Opens the extension configuration settings
      */
-    OpenConfigurationSettings() {
+    openConfigurationSettings() {
         vscode.commands.executeCommand('workbench.action.openSettings', 'allaunchmanagement.launchConfigurations');
     }
 
     /**
      * Opens the current project Launch.json file.
      */
-    OpenLaunchConfiguration() {
+    openLaunchConfiguration() {
         vscode.commands.executeCommand('workbench.action.debug.configure');
     }
 
@@ -114,7 +114,7 @@ export class ALLaunchManagement {
      * Check if the current project is not in a workspace based project
      * @returns boolean
      */
-    isSingleFolderProject() {
+    private isSingleFolderProject(): boolean {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         
         if (workspaceFolders) {
