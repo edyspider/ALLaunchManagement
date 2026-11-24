@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
+import type { DebugConfiguration } from 'vscode';
 
 export interface VSCodeConfiguration {
     label: string;
-    configuration: vscode.DebugConfiguration;
+    configuration: DebugConfiguration;
 }

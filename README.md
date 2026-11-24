@@ -2,13 +2,13 @@
 
 <p align="center">
   <img
-    src="https://raw.githubusercontent.com/edyspider/ALLaunchManagement/master/img/banner.png"
-    align="center" alt="GitHub Readme Stats" />
+    src="https://raw.githubusercontent.com/edyspider/ALLaunchManagement/main/img/banner.png"
+    align="center" alt="AL Launch Management" />
   <h1 align="center">AL Launch Management</h1>
 </p>
 
 <p align="center">
-  <a href="https://github.com/edyspider/ALLaunchManagement/blob/master/LICENSE">
+  <a href="https://github.com/edyspider/ALLaunchManagement/blob/main/LICENSE">
     <img alt="License" src="https://img.shields.io/github/license/edyspider/allaunchmanagement">
   </a>
   <a href="https://marketplace.visualstudio.com/items?itemName=EdySpider.allaunchmanagement">
@@ -20,6 +20,9 @@
   <a href="https://github.com/edyspider/ALLaunchManagement/tags">
     <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/edyspider/ALLaunchManagement">
   </a>
+  <a href="https://github.com/edyspider/ALLaunchManagement/actions/workflows/ci.yml">
+    <img alt="CI" src="https://github.com/edyspider/ALLaunchManagement/actions/workflows/ci.yml/badge.svg">
+  </a>
   <a href="https://github.com/edyspider/ALLaunchManagement/issues">
     <img alt="GitHub issues" src="https://img.shields.io/github/issues/edyspider/ALLaunchManagement">
   </a>
@@ -27,9 +30,15 @@
 
 ## Features
 
-This extensions allows you to add to your AL projects pre-configured `launch.json`
-configurations to minimize the time spent setting up the configurations every time
-you create or add new projects to your workspace/environments.
+This extension allows you to add pre-configured `launch.json` configurations to
+your AL projects, to minimize the time spent setting up the configurations every
+time you create or add new projects to your workspace.
+
+- Pick one or more pre-defined configurations from a list.
+- A configuration with the same `name` as one already in `launch.json` replaces
+it instead of being duplicated.
+- Works with a single folder and with multi-root workspaces: it uses the folder of
+the active file, or asks you to pick one.
 
 ![Set Configuration](img/content/SettingConfiguration.png)
 
@@ -49,8 +58,28 @@ you create or add new projects to your workspace/environments.
 
 This extension contributes the following settings:
 
-- `ALLaunchManagement.LaunchConfigurations`:
-  - This setting allows you to define multiple launch.json configurations.
+- `alLaunchManagement.launchConfigurations`:
+  - This setting allows you to define multiple `launch.json` configurations. Each
+  item of `configurations` has a `label` (shown in the selection list) and a
+  `configuration` (copied to `launch.json`), for example:
+
+```json
+"alLaunchManagement.launchConfigurations": {
+  "configurations": [
+    {
+      "label": "Sandbox",
+      "configuration": {
+        "name": "Sandbox",
+        "type": "al",
+        "request": "launch",
+        "environmentType": "Sandbox",
+        "environmentName": "Sandbox",
+        "tenant": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      }
+    }
+  ]
+}
+```
 
 ![Settings](img/content/Settings.png)
 
@@ -63,11 +92,12 @@ This extension contributes the following settings:
 This extension contributes the following commands:
 
 - `ES-LM: Set Launch.json Configuration`:
-  - This command add to your project Launch.json file a new pre-defined configuration.
+  - This command adds the selected pre-defined configurations to the `launch.json`
+  file of your project.
 - `ES-LM: Open Launch Configuration`:
-  - This command opens the configuration for this extension.
+  - This command opens the settings of this extension.
 - `ES-LM: Open Project Launch.json`:
-  - This command opens the launch.json file of the current project.
+  - This command opens the `launch.json` file of the current project.
 
 ![Commands](img/content/Commands.png)
 
@@ -75,22 +105,23 @@ This extension contributes the following commands:
 
 ## Known Issues
 
-There is [one](https://github.com/edyspider/ALLaunchManagement/issues)] reported
-issue.
+See the [open issues](https://github.com/edyspider/ALLaunchManagement/issues)
+on GitHub.
 
 ---
 
 ## Release Notes
 
-### [1.3.2]
+### [1.4.0]
 
-- Update launch.json file regardless if is on a workspace based project or
-single project folder.
-- If in a workspace environment and no file or folder is selected then select
-the project to be updated from a dropdown list.
-- Automatically update the launch.json file from the current (selected) workspace
-project.
-- Update windows messages.
+- A configuration with the same name is replaced instead of duplicated ([#2](https://github.com/edyspider/ALLaunchManagement/issues/2)).
+- Configurations from your user settings are no longer copied to the project.
+- Clear messages when no folder is open, nothing is selected or saving fails.
+- IntelliSense and validation for the extension settings.
+- Fixed the "Sandbox Debug API" default configuration (`attach`).
+- Requires VS Code 1.95 or later.
+
+See the [CHANGELOG](CHANGELOG.md) for all versions.
 
 ---
 
@@ -102,5 +133,5 @@ project.
 
 ## License
 
-- **[MIT license](https://github.com/edyspider/ALLaunchManagement/blob/master/LICENSE)**
-- Copyright 2024 &copy; [EdySpider](https://github.com/edyspider).
+- **[MIT license](https://github.com/edyspider/ALLaunchManagement/blob/main/LICENSE)**
+- Copyright 2024-2026 &copy; [EdySpider](https://github.com/edyspider).
