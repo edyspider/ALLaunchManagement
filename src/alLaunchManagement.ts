@@ -77,7 +77,7 @@ export class ALLaunchManagement {
      * Opens the extension configuration settings
      */
     openConfigurationSettings() {
-        vscode.commands.executeCommand('workbench.action.openSettings', 'allaunchmanagement.launchConfigurations');
+        vscode.commands.executeCommand('workbench.action.openSettings', '@ext:EdySpider.allaunchmanagement');
     }
 
     /**

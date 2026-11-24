@@ -49,10 +49,47 @@
     ],
     "configuration": [
       {
-        "title": "VSCode Launch Configurations",
+        "title": "AL Launch Management",
         "properties": {
           "alLaunchManagement.launchConfigurations": {
             "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "configurations": {
+                "type": "array",
+                "description": "List of pre-defined launch configurations.",
+                "items": {
+                  "type": "object",
+                  "required": ["label", "configuration"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "description": "Name shown in the selection list."
+                    },
+                    "configuration": {
+                      "type": "object",
+                      "description": "Configuration copied to launch.json. A configuration with the same name is replaced.",
+                      "required": ["name", "type", "request"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Name of the configuration in launch.json."
+                        },
+                        "type": {
+                          "type": "string",
+                          "default": "al"
+                        },
+                        "request": {
+                          "type": "string",
+                          "enum": ["launch", "attach", "snapshotInitialize"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "default": {
               "configurations": [
                 {
@@ -110,7 +147,7 @@
                   "label": "Sandbox Debug API",
                   "configuration": {
                     "name": "Debug API",
-                    "request": "snapshotInitialize",
+                    "request": "attach",
                     "type": "al",
                     "environmentType": "Sandbox",
                     "environmentName": "Sandbox",
@@ -135,7 +172,7 @@
                 }
               ]
             },
-            "description": "VSCode Pre-defined launch configurations for your al extension."
+            "markdownDescription": "Pre-defined `launch.json` configurations for your AL projects. Each item has a `label` (shown in the selection list) and a `configuration` (copied to `launch.json`)."
           }
         }
       }
